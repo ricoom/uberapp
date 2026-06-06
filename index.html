@@ -212,13 +212,17 @@
             text-align: center;
         }
         
-        /* Receipt Styles - Exactly matching Bolt format */
+        /* Receipt Styles - EXACT MATCH to Desktop Version for both screen and PDF */
         .receipt {
-            font-family: 'Courier New', 'Monaco', monospace;
+            font-family: 'Courier New', 'Courier', monospace;
+            width: 100%;
             max-width: 500px;
             margin: 0 auto;
             padding: 20px;
             background: white;
+            font-size: 10pt;
+            line-height: 1.4;
+            color: black;
         }
         
         .receipt-header {
@@ -227,48 +231,51 @@
         }
         
         .bolt-logo {
-            font-size: 28px;
+            font-size: 26pt;
             font-weight: bold;
             color: #00A651;
-            letter-spacing: 5px;
+            letter-spacing: 8px;
         }
         
         .bolt-tagline {
-            font-size: 9px;
-            color: #808080;
+            font-size: 8pt;
+            color: #666;
             margin-top: 5px;
         }
         
         .receipt-line {
-            border-top: 1px solid #ccc;
+            border-top: 1px solid black;
             margin: 10px 0;
         }
         
         .receipt-line-dashed {
-            border-top: 1px dashed #ccc;
+            border-top: 1px dashed #999;
             margin: 10px 0;
         }
         
         .receipt-row {
-            margin: 8px 0;
-            font-size: 10px;
-            line-height: 1.4;
+            margin: 6px 0;
+            font-size: 10pt;
         }
         
         .receipt-label {
             font-weight: bold;
         }
         
+        .receipt-indent {
+            margin-left: 20px;
+        }
+        
         .receipt-table {
             width: 100%;
             border-collapse: collapse;
             margin: 10px 0;
-            font-size: 9px;
+            font-size: 9pt;
         }
         
         .receipt-table th,
         .receipt-table td {
-            border: 1px solid #ddd;
+            border: 1px solid black;
             padding: 6px;
             text-align: left;
         }
@@ -283,12 +290,8 @@
         }
         
         .total-row {
-            margin: 5px 0;
-            font-size: 10px;
-        }
-        
-        .total-bold {
-            font-weight: bold;
+            margin: 4px 0;
+            font-size: 10pt;
         }
         
         .total-green {
@@ -298,21 +301,67 @@
         
         .charged-header {
             font-weight: bold;
-            font-size: 11px;
+            font-size: 11pt;
             color: #00A651;
-            margin: 15px 0 10px 0;
+            margin: 15px 0 8px 0;
         }
         
         .payment-row {
             margin: 5px 0;
-            font-size: 10px;
+            font-size: 10pt;
+            font-weight: bold;
         }
         
         .footer {
             text-align: center;
-            font-size: 8px;
-            color: #808080;
+            font-size: 8pt;
+            color: #666;
             margin-top: 20px;
+        }
+        
+        /* Print styles - ensures PDF matches exactly */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .form-section, .button-group, .format-group, .receipt-section h2, .download-section, .btn-primary, .btn-danger, .btn-secondary {
+                display: none;
+            }
+            
+            .container {
+                display: block;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .receipt-section {
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+                position: static;
+                max-height: none;
+            }
+            
+            .receipt {
+                margin: 0;
+                padding: 0.5in;
+                max-width: 100%;
+            }
+            
+            .receipt-table th,
+            .receipt-table td {
+                border: 1px solid black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            
+            .bolt-logo {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
         
         /* Download Section */
@@ -336,7 +385,7 @@
             margin-bottom: 20px;
         }
         
-        .download-section .btn-secondary {
+        .download-section .btn-download {
             display: inline-block;
             text-decoration: none;
             background: #00A651;
@@ -345,14 +394,13 @@
             border-radius: 5px;
             font-weight: bold;
             transition: background 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
         }
         
-        .download-section .btn-secondary:hover {
+        .download-section .btn-download:hover {
             background: #008c44;
-        }
-        
-        .mt-4 {
-            margin-top: 0;
         }
         
         @media (max-width: 968px) {
@@ -383,24 +431,11 @@
                 width: 100%;
             }
         }
-        
-        @media print {
-            .form-section, .button-group, .format-group, .receipt-section h2, .download-section {
-                display: none;
-            }
-            .container {
-                display: block;
-            }
-            .receipt-section {
-                box-shadow: none;
-                padding: 0;
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Form Section - Exactly like desktop -->
+        <!-- Form Section -->
         <div class="form-section">
             <div class="form-header">
                 <h1>BOLT RECEIPT GENERATOR</h1>
@@ -506,11 +541,11 @@
         </div>
     </div>
     
-    <!-- Download Section - Bolt Receipt Generator Only -->
+    <!-- Download Section -->
     <div class="download-section">
         <h2>Download Bolt Receipt Generator</h2>
-        <p>Generate on your PC</p>
-        <a href="downloads/BoltReceiptGenerator-1.0.0.exe" download class="btn-secondary">
+        <p>Generate receipts on your PC with the desktop application</p>
+        <a href="downloads/BoltReceiptGenerator-1.0.0.exe" download class="btn-download">
             Download Bolt Receipt Generator (.exe)
         </a>
     </div>
@@ -543,7 +578,6 @@
             const total = tripFee + vat;
             document.getElementById('total').value = total.toFixed(2);
             
-            // Auto-fill cash amount if cash is selected
             const paymentMethod = document.getElementById('paymentMethod').value;
             if (paymentMethod === 'Cash') {
                 document.getElementById('cashAmount').value = total.toFixed(2);
@@ -592,27 +626,27 @@
                     <div class="receipt-line"></div>
                     
                     <div class="receipt-row">
-                        <span class="receipt-label">Invoice no.</span> ${invoiceNo}
+                        <strong>Invoice no.</strong> ${invoiceNo}
                     </div>
                     <div class="receipt-row">
-                        <span class="receipt-label">Date:</span> ${date}
+                        <strong>Date:</strong> ${date}
                     </div>
                     
                     <div class="receipt-row">
-                        <span class="receipt-label">Recipient:</span>
+                        <strong>Recipient:</strong>
                     </div>
             `;
             
             if (recipientName) {
-                receiptHtml += `<div class="receipt-row">${recipientName}</div>`;
+                receiptHtml += `<div class="receipt-row receipt-indent">${recipientName}</div>`;
             }
             if (recipientAddress) {
-                receiptHtml += `<div class="receipt-row">${recipientAddress}</div>`;
+                receiptHtml += `<div class="receipt-row receipt-indent">${recipientAddress}</div>`;
             }
             
             receiptHtml += `
                     <div class="receipt-row">
-                        <span class="receipt-label">Start:</span> ${startLocation} ${startDateTime ? '(' + startDateTime + ')' : ''}
+                        <strong>Start:</strong> ${startLocation} ${startDateTime ? '(' + startDateTime + ')' : ''}
                     </div>
                     
                     <div class="receipt-line"></div>
@@ -624,22 +658,20 @@
                         <tbody>
                             <tr><td>Trip Fee</td><td>${tripFee.toFixed(2)}</td><td>${vat.toFixed(2)}</td><td>${tripFee.toFixed(2)}</td></tr>
                         </tbody>
-                    </table>
+                     </table>
                     
                     <div class="receipt-line"></div>
                     
                     <div class="total-section">
-                        <div class="total-row"><span class="receipt-label">Total(KES):</span> ${total.toFixed(2)}</div>
-                        <div class="total-row"><span class="receipt-label">VAT 0%:</span> ${vat.toFixed(2)}</div>
-                        <div class="total-row"><span class="receipt-label total-green">Total including VAT (KES):</span> <span class="total-green">${total.toFixed(2)}</span></div>
+                        <div class="total-row"><strong>Total(KES):</strong> ${total.toFixed(2)}</div>
+                        <div class="total-row"><strong>VAT 0%:</strong> ${vat.toFixed(2)}</div>
+                        <div class="total-row"><strong>Total including VAT (KES):</strong> <span class="total-green">${total.toFixed(2)}</span></div>
                     </div>
                     
                     <div class="receipt-line"></div>
                     
                     <div class="charged-header">Charged</div>
-                    <div class="payment-row"><span class="receipt-label">${paymentMethod}:</span> ${cashAmount.toFixed(2)}</div>
-                    
-                    <div class="receipt-line-dashed"></div>
+                    <div class="payment-row"><strong>${paymentMethod}:</strong> ${cashAmount.toFixed(2)}</div>
                     
                     <div class="footer">
                         Thank you for riding with Bolt!<br>
@@ -653,7 +685,6 @@
         
         // Generate final receipt (PDF or Print)
         function generateReceipt() {
-            // Update totals first
             calculateTotal();
             updateReceiptPreview();
             
@@ -666,21 +697,21 @@
                     margin: [0.5, 0.5, 0.5, 0.5],
                     filename: `bolt_receipt_${invoiceNo}.pdf`,
                     image: { type: 'jpeg', quality: 0.98 },
-                    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
-                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                    html2canvas: { 
+                        scale: 3,
+                        backgroundColor: '#ffffff',
+                        letterRendering: true
+                    },
+                    jsPDF: { 
+                        unit: 'in', 
+                        format: 'a4', 
+                        orientation: 'portrait' 
+                    }
                 };
                 html2pdf().set(opt).from(receiptContent).save();
             } else {
                 window.print();
             }
-            
-            // Generate new invoice number for next receipt
-            setTimeout(() => {
-                if (confirm('Receipt generated! Generate new invoice number for next receipt?')) {
-                    generateInvoiceNumber();
-                    clearForm();
-                }
-            }, 500);
         }
         
         // Clear form
@@ -730,7 +761,6 @@
         });
         document.getElementById('date').addEventListener('change', updateReceiptPreview);
         document.getElementById('cashAmount').addEventListener('input', updateReceiptPreview);
-        document.getElementById('format').addEventListener('change', () => {});
         
         // Initialize
         generateInvoiceNumber();
