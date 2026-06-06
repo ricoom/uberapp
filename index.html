@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bolt Receipt Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        /* Form Section - Exactly like desktop */
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .form-header {
+            background: white;
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .form-header h1 {
+            color: #00A651;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        .form-body {
+            padding: 20px;
+        }
+        
+        .section-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 20px 0 15px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #00A651;
+        }
+        
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-group label {
+            width: 180px;
+            font-weight: bold;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .form-group input, .form-group select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00A651;
+        }
+        
+        .form-group input:disabled {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+        
+        .invoice-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .invoice-container input {
+            flex: 1;
+        }
+        
+        .btn-new-invoice {
+            background: #00A651;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        .btn-new-invoice:hover {
+            background: #008c44;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        
+        .btn-primary {
+            background: #00A651;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover, .btn-danger:hover, .btn-secondary:hover {
+            opacity: 0.9;
+        }
+        
+        /* Format selector */
+        .format-group {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .format-group label {
+            width: 180px;
+            font-weight: bold;
+            color: #333;
+            font-size: 13px;
+        }
+        
+        .format-group select {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 13px;
+            max-width: 200px;
+        }
+        
+        /* Receipt Section */
+        .receipt-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .receipt-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #00A651;
+            text-align: center;
+        }
+        
+        /* Receipt Styles - Exactly matching Bolt format */
+        .receipt {
+            font-family: 'Courier New', 'Monaco', monospace;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+        }
+        
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .bolt-logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00A651;
+            letter-spacing: 5px;
+        }
+        
+        .bolt-tagline {
+            font-size: 9px;
+            color: #808080;
+            margin-top: 5px;
+        }
+        
+        .receipt-line {
+            border-top: 1px solid #ccc;
+            margin: 10px 0;
+        }
+        
+        .receipt-line-dashed {
+            border-top: 1px dashed #ccc;
+            margin: 10px 0;
+        }
+        
+        .receipt-row {
+            margin: 8px 0;
+            font-size: 10px;
+            line-height: 1.4;
+        }
+        
+        .receipt-label {
+            font-weight: bold;
+        }
+        
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 9px;
+        }
+        
+        .receipt-table th,
+        .receipt-table td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        
+        .receipt-table th {
+            background: #f5f5f5;
+            font-weight: bold;
+        }
+        
+        .total-section {
+            margin: 10px 0;
+        }
+        
+        .total-row {
+            margin: 5px 0;
+            font-size: 10px;
+        }
+        
+        .total-bold {
+            font-weight: bold;
+        }
+        
+        .total-green {
+            color: #00A651;
+            font-weight: bold;
+        }
+        
+        .charged-header {
+            font-weight: bold;
+            font-size: 11px;
+            color: #00A651;
+            margin: 15px 0 10px 0;
+        }
+        
+        .payment-row {
+            margin: 5px 0;
+            font-size: 10px;
+        }
+        
+        .footer {
+            text-align: center;
+            font-size: 8px;
+            color: #808080;
+            margin-top: 20px;
+        }
+        
+        @media (max-width: 968px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .receipt-section {
+                position: static;
+                max-height: none;
+            }
+            
+            .form-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .form-group label {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            
+            .form-group input, .form-group select {
+                width: 100%;
+            }
+            
+            .invoice-container {
+                width: 100%;
+            }
+        }
+        
+        @media print {
+            .form-section, .button-group, .format-group, .receipt-section h2 {
+                display: none;
+            }
+            .container {
+                display: block;
+            }
+            .receipt-section {
+                box-shadow: none;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Form Section - Exactly like desktop -->
+        <div class="form-section">
+            <div class="form-header">
+                <h1>BOLT RECEIPT GENERATOR</h1>
+            </div>
+            <div class="form-body">
+                <!-- Format Selection -->
+                <div class="format-group">
+                    <label>Output Format:</label>
+                    <select id="format">
+                        <option value="pdf">PDF</option>
+                        <option value="print">Print</option>
+                    </select>
+                </div>
+                
+                <!-- Invoice Details Section -->
+                <div class="section-title">INVOICE DETAILS</div>
+                
+                <div class="form-group">
+                    <label>Invoice No:</label>
+                    <div class="invoice-container">
+                        <input type="text" id="invoiceNo" readonly style="background:#f5f5f5">
+                        <button type="button" class="btn-new-invoice" onclick="generateInvoiceNumber()">↻ New Invoice</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="date">
+                </div>
+                
+                <!-- Recipient Information Section -->
+                <div class="section-title">RECIPIENT INFORMATION</div>
+                
+                <div class="form-group">
+                    <label>Recipient Name:</label>
+                    <input type="text" id="recipientName" placeholder="e.g., Eric Munene">
+                </div>
+                
+                <div class="form-group">
+                    <label>Recipient Address:</label>
+                    <input type="text" id="recipientAddress" placeholder="e.g., Nairobi, Kenya">
+                </div>
+                
+                <!-- Trip Details Section -->
+                <div class="section-title">TRIP DETAILS</div>
+                
+                <div class="form-group">
+                    <label>Start Location:</label>
+                    <input type="text" id="startLocation" placeholder="e.g., Ruiru">
+                </div>
+                
+                <div class="form-group">
+                    <label>Start Date & Time:</label>
+                    <input type="text" id="startDateTime" placeholder="e.g., 2026-05-21 12:30pm">
+                </div>
+                
+                <!-- Payment Details Section -->
+                <div class="section-title">PAYMENT DETAILS</div>
+                
+                <div class="form-group">
+                    <label>Trip Fee (KES):</label>
+                    <input type="number" id="tripFee" placeholder="e.g., 3000.00" step="0.01">
+                </div>
+                
+                <div class="form-group">
+                    <label>VAT 0% (KES):</label>
+                    <input type="text" id="vat" value="0.00" disabled style="background:#f5f5f5">
+                </div>
+                
+                <div class="form-group">
+                    <label>Total (KES):</label>
+                    <input type="text" id="total" disabled style="background:#e8f5e9; color:#00A651; font-weight:bold">
+                </div>
+                
+                <div class="form-group">
+                    <label>Payment Method:</label>
+                    <select id="paymentMethod">
+                        <option value="Cash">Cash</option>
+                        <option value="Card">Card</option>
+                        <option value="Bolt Wallet">Bolt Wallet</option>
+                        <option value="Mobile Money">Mobile Money</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Cash Amount (KES):</label>
+                    <input type="number" id="cashAmount" placeholder="e.g., 3000.00" step="0.01">
+                </div>
+                
+                <!-- Buttons -->
+                <div class="button-group">
+                    <button class="btn-primary" onclick="generateReceipt()">Generate Receipt</button>
+                    <button class="btn-danger" onclick="clearForm()">Clear Form</button>
+                    <button class="btn-secondary" onclick="loadSample()">Load Sample</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Receipt Preview Section -->
+        <div class="receipt-section">
+            <h2>Receipt Preview</h2>
+            <div id="receiptPreview"></div>
+        </div>
+    </div>
+    
+    <script>
+        // Generate invoice number in format: XXXXXXXX-XXXXXX-XXXX
+        function generateInvoiceNumber() {
+            const random1 = Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let random2 = '';
+            for (let i = 0; i < 6; i++) {
+                random2 += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            const random3 = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const invoiceNo = `${random1}-${random2}-${random3}`;
+            document.getElementById('invoiceNo').value = invoiceNo;
+            return invoiceNo;
+        }
+        
+        // Set today's date
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+        }
+        
+        // Calculate total
+        function calculateTotal() {
+            const tripFee = parseFloat(document.getElementById('tripFee').value) || 0;
+            const vat = 0;
+            const total = tripFee + vat;
+            document.getElementById('total').value = total.toFixed(2);
+            
+            // Auto-fill cash amount if cash is selected
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            if (paymentMethod === 'Cash') {
+                document.getElementById('cashAmount').value = total.toFixed(2);
+            }
+            return total;
+        }
+        
+        // Toggle cash amount field
+        function toggleCashField() {
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            const cashAmountField = document.getElementById('cashAmount');
+            if (paymentMethod === 'Cash') {
+                cashAmountField.disabled = false;
+                const total = parseFloat(document.getElementById('total').value) || 0;
+                cashAmountField.value = total.toFixed(2);
+            } else {
+                cashAmountField.disabled = true;
+                cashAmountField.value = '';
+            }
+        }
+        
+        // Update receipt preview
+        function updateReceiptPreview() {
+            const invoiceNo = document.getElementById('invoiceNo').value || 'Auto-generated';
+            const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
+            const recipientName = document.getElementById('recipientName').value || '';
+            const recipientAddress = document.getElementById('recipientAddress').value || '';
+            const startLocation = document.getElementById('startLocation').value || '';
+            const startDateTime = document.getElementById('startDateTime').value || '';
+            const tripFee = parseFloat(document.getElementById('tripFee').value) || 0;
+            const vat = 0;
+            const total = tripFee + vat;
+            const paymentMethod = document.getElementById('paymentMethod').value;
+            let cashAmount = parseFloat(document.getElementById('cashAmount').value) || total;
+            
+            if (paymentMethod !== 'Cash') {
+                cashAmount = total;
+            }
+            
+            let receiptHtml = `
+                <div class="receipt" id="receiptContent">
+                    <div class="receipt-header">
+                        <div class="bolt-logo">B O L T</div>
+                        <div class="bolt-tagline">Ride smarter, save more</div>
+                    </div>
+                    <div class="receipt-line"></div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Invoice no.</span> ${invoiceNo}
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Date:</span> ${date}
+                    </div>
+                    
+                    <div class="receipt-row">
+                        <span class="receipt-label">Recipient:</span>
+                    </div>
+            `;
+            
+            if (recipientName) {
+                receiptHtml += `<div class="receipt-row">${recipientName}</div>`;
+            }
+            if (recipientAddress) {
+                receiptHtml += `<div class="receipt-row">${recipientAddress}</div>`;
+            }
+            
+            receiptHtml += `
+                    <div class="receipt-row">
+                        <span class="receipt-label">Start:</span> ${startLocation} ${startDateTime ? '(' + startDateTime + ')' : ''}
+                    </div>
+                    
+                    <div class="receipt-line"></div>
+                    
+                    <table class="receipt-table">
+                        <thead>
+                            <tr><th>Title</th><th>Sum (KES)</th><th>VAT 0%</th><th>Total sum (KES)</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Trip Fee</td><td>${tripFee.toFixed(2)}</td><td>${vat.toFixed(2)}</td><td>${tripFee.toFixed(2)}</td></tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="receipt-line"></div>
+                    
+                    <div class="total-section">
+                        <div class="total-row"><span class="receipt-label">Total(KES):</span> ${total.toFixed(2)}</div>
+                        <div class="total-row"><span class="receipt-label">VAT 0%:</span> ${vat.toFixed(2)}</div>
+                        <div class="total-row"><span class="receipt-label total-green">Total including VAT (KES):</span> <span class="total-green">${total.toFixed(2)}</span></div>
+                    </div>
+                    
+                    <div class="receipt-line"></div>
+                    
+                    <div class="charged-header">Charged</div>
+                    <div class="payment-row"><span class="receipt-label">${paymentMethod}:</span> ${cashAmount.toFixed(2)}</div>
+                    
+                    <div class="receipt-line-dashed"></div>
+                    
+                    <div class="footer">
+                        Thank you for riding with Bolt!<br>
+                        For support, visit bolt.eu/support
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('receiptPreview').innerHTML = receiptHtml;
+        }
+        
+        // Generate final receipt (PDF or Print)
+        function generateReceipt() {
+            // Update totals first
+            calculateTotal();
+            updateReceiptPreview();
+            
+            const format = document.getElementById('format').value;
+            const invoiceNo = document.getElementById('invoiceNo').value;
+            const receiptContent = document.getElementById('receiptContent');
+            
+            if (format === 'pdf') {
+                const opt = {
+                    margin: [0.5, 0.5, 0.5, 0.5],
+                    filename: `bolt_receipt_${invoiceNo}.pdf`,
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+                    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(receiptContent).save();
+            } else {
+                window.print();
+            }
+            
+            // Generate new invoice number for next receipt
+            setTimeout(() => {
+                if (confirm('Receipt generated! Generate new invoice number for next receipt?')) {
+                    generateInvoiceNumber();
+                    clearForm();
+                }
+            }, 500);
+        }
+        
+        // Clear form
+        function clearForm() {
+            document.getElementById('recipientName').value = '';
+            document.getElementById('recipientAddress').value = '';
+            document.getElementById('startLocation').value = '';
+            document.getElementById('startDateTime').value = '';
+            document.getElementById('tripFee').value = '';
+            document.getElementById('paymentMethod').value = 'Cash';
+            document.getElementById('cashAmount').value = '';
+            document.getElementById('vat').value = '0.00';
+            document.getElementById('total').value = '';
+            setTodayDate();
+            calculateTotal();
+            updateReceiptPreview();
+            toggleCashField();
+        }
+        
+        // Load sample data
+        function loadSample() {
+            document.getElementById('recipientName').value = 'Eric Munene';
+            document.getElementById('recipientAddress').value = 'Nairobi, Kenya';
+            document.getElementById('startLocation').value = 'Ruiru';
+            document.getElementById('startDateTime').value = '2026-05-21 12:30pm';
+            document.getElementById('tripFee').value = '3000';
+            document.getElementById('paymentMethod').value = 'Cash';
+            calculateTotal();
+            updateReceiptPreview();
+            toggleCashField();
+        }
+        
+        // Event listeners
+        document.getElementById('tripFee').addEventListener('input', () => {
+            calculateTotal();
+            updateReceiptPreview();
+            toggleCashField();
+        });
+        
+        document.getElementById('recipientName').addEventListener('input', updateReceiptPreview);
+        document.getElementById('recipientAddress').addEventListener('input', updateReceiptPreview);
+        document.getElementById('startLocation').addEventListener('input', updateReceiptPreview);
+        document.getElementById('startDateTime').addEventListener('input', updateReceiptPreview);
+        document.getElementById('paymentMethod').addEventListener('change', () => {
+            toggleCashField();
+            updateReceiptPreview();
+        });
+        document.getElementById('date').addEventListener('change', updateReceiptPreview);
+        document.getElementById('cashAmount').addEventListener('input', updateReceiptPreview);
+        document.getElementById('format').addEventListener('change', () => {});
+        
+        // Initialize
+        generateInvoiceNumber();
+        setTodayDate();
+        calculateTotal();
+        updateReceiptPreview();
+        toggleCashField();
+    </script>
+</body>
+</html>
