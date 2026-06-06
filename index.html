@@ -315,6 +315,46 @@
             margin-top: 20px;
         }
         
+        /* Download Section */
+        .download-section {
+            max-width: 1400px;
+            margin: 40px auto 0;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .download-section h2 {
+            color: #00A651;
+            margin-bottom: 10px;
+        }
+        
+        .download-section p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .download-section .btn-secondary {
+            display: inline-block;
+            text-decoration: none;
+            background: #00A651;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        
+        .download-section .btn-secondary:hover {
+            background: #008c44;
+        }
+        
+        .mt-4 {
+            margin-top: 0;
+        }
+        
         @media (max-width: 968px) {
             .container {
                 grid-template-columns: 1fr;
@@ -345,7 +385,7 @@
         }
         
         @media print {
-            .form-section, .button-group, .format-group, .receipt-section h2 {
+            .form-section, .button-group, .format-group, .receipt-section h2, .download-section {
                 display: none;
             }
             .container {
@@ -464,6 +504,15 @@
             <h2>Receipt Preview</h2>
             <div id="receiptPreview"></div>
         </div>
+    </div>
+    
+    <!-- Download Section - Bolt Receipt Generator Only -->
+    <div class="download-section">
+        <h2>Download Barcode Generator</h2>
+        <p>Generate barcodes for items without one</p>
+        <a href="downloads/BoltReceiptGenerator-1.0.0.exe" download class="btn-secondary">
+            Download Bolt Receipt Generator (.exe)
+        </a>
     </div>
     
     <script>
